@@ -246,12 +246,39 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   tilePrefab: {fileID: 390591879801716409, guid: 9f99b0d5c3ec5d64a868394186409df2, type: 3}
   mapPrefab: {fileID: 6466699566260909717, guid: 7f06503237b13f34eb42a89ae1c2c246, type: 3}
-  minWidth: 6
-  maxWidth: 14
-  minHeight: 6
-  maxHeight: 14
-  baseColor: {r: 0, g: 1, b: 0.8083575, a: 1}
-  secondColor: {r: 0, g: 0.50980395, b: 0.41678873, a: 1}
+  minWidth: 8
+  maxWidth: 18
+  minHeight: 8
+  maxHeight: 18
+  baseSprite: {fileID: 1728630908, guid: acc1d3d7d3fe8eb41b2c504e6b6ffe97, type: 3}
+  secondSprite: {fileID: -945908908, guid: acc1d3d7d3fe8eb41b2c504e6b6ffe97, type: 3}
+  leftWallSprite: {fileID: -184140249, guid: 1d0ec6e7fe8d23341b57e73310eaa5c5, type: 3}
+  topWallSprite: {fileID: -1313252274, guid: 1d0ec6e7fe8d23341b57e73310eaa5c5, type: 3}
+  rightWallSprite: {fileID: 501952029, guid: 1d0ec6e7fe8d23341b57e73310eaa5c5, type: 3}
+  downWallSprite: {fileID: -1594229802, guid: 1d0ec6e7fe8d23341b57e73310eaa5c5, type: 3}
+  leftTopWallSprite: {fileID: -1437498038, guid: 1d0ec6e7fe8d23341b57e73310eaa5c5, type: 3}
+  rightTopWallSprite: {fileID: -71570773, guid: 1d0ec6e7fe8d23341b57e73310eaa5c5, type: 3}
+  leftDownWallSprite: {fileID: 1903596446, guid: 1d0ec6e7fe8d23341b57e73310eaa5c5, type: 3}
+  rigtDownWallSprite: {fileID: -1489180696, guid: 1d0ec6e7fe8d23341b57e73310eaa5c5, type: 3}
+  leftTopBridgeSprite: {fileID: -573080921, guid: cd3516341ce40cf4fbdce6ae9c5d0286, type: 3}
+  rightTopBridgeSprite: {fileID: 1945244159, guid: cd3516341ce40cf4fbdce6ae9c5d0286, type: 3}
+  leftDownBridgeSprite: {fileID: 529672122, guid: cd3516341ce40cf4fbdce6ae9c5d0286, type: 3}
+  rightDownBridgeSprite: {fileID: -901319456, guid: cd3516341ce40cf4fbdce6ae9c5d0286, type: 3}
+  topBridgeSprite: {fileID: -143657911, guid: cd3516341ce40cf4fbdce6ae9c5d0286, type: 3}
+  downBridgeSprite: {fileID: 106118517, guid: cd3516341ce40cf4fbdce6ae9c5d0286, type: 3}
+  middleBridgeSprite: {fileID: 1331509285, guid: cd3516341ce40cf4fbdce6ae9c5d0286, type: 3}
+  middleEndBridgeSprite: {fileID: -1779170142, guid: cd3516341ce40cf4fbdce6ae9c5d0286, type: 3}
+  topMiddleBridgeSprite: {fileID: -821751473, guid: cd3516341ce40cf4fbdce6ae9c5d0286, type: 3}
+  topLeftBridgeSprite: {fileID: -1905553802, guid: cd3516341ce40cf4fbdce6ae9c5d0286, type: 3}
+  topRightBridgeSprite: {fileID: 520505203, guid: cd3516341ce40cf4fbdce6ae9c5d0286, type: 3}
+  downMiddleBridgeSprite: {fileID: 876097495, guid: cd3516341ce40cf4fbdce6ae9c5d0286, type: 3}
+  downLeftBridgeSprite: {fileID: 184817088, guid: cd3516341ce40cf4fbdce6ae9c5d0286, type: 3}
+  downRightBridgeSprite: {fileID: 1658239790, guid: cd3516341ce40cf4fbdce6ae9c5d0286, type: 3}
+  topdownLeftBridgeSprite: {fileID: -2087646682, guid: cd3516341ce40cf4fbdce6ae9c5d0286, type: 3}
+  topdownRightBridgeSprite: {fileID: -705377625, guid: cd3516341ce40cf4fbdce6ae9c5d0286, type: 3}
+  topDownMiddleBridgeSprite: {fileID: 986614451, guid: cd3516341ce40cf4fbdce6ae9c5d0286, type: 3}
+  topMiddleEndBridgeSprite: {fileID: -455141341, guid: cd3516341ce40cf4fbdce6ae9c5d0286, type: 3}
+  downMiddleEndBridgeSprite: {fileID: 876097495, guid: cd3516341ce40cf4fbdce6ae9c5d0286, type: 3}
 --- !u!4 &1958419912
 Transform:
   m_ObjectHideFlags: 0
