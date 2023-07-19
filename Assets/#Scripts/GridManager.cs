@@ -5,8 +5,9 @@ using UnityEngine;
 
 public class GridManager : MonoBehaviour
 {
+    public static GridManager Instance;
+
     [SerializeField] GameObject tilePrefab, mapPrefab;
-    [SerializeField] int minWidth, maxWidth, minHeight, maxHeight;
     [SerializeField] Sprite baseSprite, secondSprite;
 
     [Header("Wall Sprites")]
@@ -22,17 +23,21 @@ public class GridManager : MonoBehaviour
 
     GameObject currentMap;
     MapManager mapManager;
+
+    private void Awake()
+    {
+        Instance = this;
+    }
     private void Start()
     {
-        int width = Random.Range(minWidth, maxWidth);
-        int height = Random.Range(minHeight, maxHeight);
-        CreateMap(width, height);
+
     }
 
-    public void CreateMap(int width, int height)
+    public MapManager CreateMap(Vector2Int entrySide ,int width, int height, bool addExitTile)
     {
         currentMap = Instantiate(mapPrefab, new Vector3(width / 2, height / 2, 0), Quaternion.identity);
         mapManager = currentMap.GetComponent<MapManager>();
+        mapManager.entrySide = entrySide;
         mapManager.width = width;
         mapManager.height = height;
         for (int x = 0; x < width; x++)
@@ -66,10 +71,8 @@ public class GridManager : MonoBehaviour
                 }
             }
         }
-
-        var randomEntrySide = new List<Vector2Int>() { Vector2Int.left, Vector2Int.up, Vector2Int.right, Vector2Int.down };
-        //randomEntrySide[Random.Range(0, randomEntrySide.Count)]
-        SetEntryTile(Vector2Int.down);
+        SetEntryTile(entrySide, addExitTile);
+        return mapManager;
     }
 
     private void SetBorderTile(GameObject tile, int x, int y, int height, int width)
@@ -115,7 +118,7 @@ public class GridManager : MonoBehaviour
         }
     }
 
-    private void SetEntryTile(Vector2Int entrySide)
+    private void SetEntryTile(Vector2Int entrySide, bool setExitTile)
     {
         int y = 0, x = 0;
         Tile tile = new Tile();
@@ -216,7 +219,7 @@ public class GridManager : MonoBehaviour
         tile.GetComponent<BoxCollider2D>().enabled = false;
         tile.gameObject.name = "EntryTile";
         mapManager.entryTilePos = new Vector2(x,y);
-        SetExitTile(entrySide);
+        if(setExitTile) SetExitTile(entrySide);
     }
 
     private void SetExitTile(Vector2Int entrySide)
@@ -224,12 +227,12 @@ public class GridManager : MonoBehaviour
         List<Vector2Int> possibleExitSides = new List<Vector2Int>() { Vector2Int.left, Vector2Int.up, Vector2Int.right, Vector2Int.down };
         possibleExitSides.Remove(entrySide);
         Vector2Int exitSide = possibleExitSides[Random.Range(0, possibleExitSides.Count)];
-
+        mapManager.exitSide = exitSide;
         int y = 0, x = 0;
         Tile tile = new Tile();
         if (exitSide == Vector2Int.left)
         {
-            y = Random.Range(3, mapManager.height - 2);
+            y = Random.Range(3, mapManager.height - 3);
             x = 0;
             tile = mapManager.borderGrids[new Vector2(0, y)];
 
@@ -255,7 +258,7 @@ public class GridManager : MonoBehaviour
         }
         else if (exitSide == Vector2Int.right)
         {
-            y = Random.Range(3, mapManager.height - 2);
+            y = Random.Range(3, mapManager.height - 3);
             x = mapManager.width - 1;
             tile = mapManager.borderGrids[new Vector2(mapManager.width - 1, y)];
             tile.gameObject.name = "ExitTile";
@@ -284,7 +287,7 @@ public class GridManager : MonoBehaviour
         }
         else if (exitSide == Vector2Int.up)
         {
-            x = Random.Range(3, mapManager.width - 2);
+            x = Random.Range(3, mapManager.width - 3);
             y = mapManager.height - 1;
             tile = mapManager.borderGrids[new Vector2(x, mapManager.height - 1)];
 
@@ -307,7 +310,7 @@ public class GridManager : MonoBehaviour
         }
         else if (exitSide == Vector2Int.down)
         {
-            x = Random.Range(1, mapManager.width - 2);
+            x = Random.Range(3, mapManager.width - 3);
             y = 0;
             tile = mapManager.borderGrids[new Vector2(x, 0)];
 

@@ -9,6 +9,7 @@ public class MapManager : MonoBehaviour
     public Dictionary<Vector2, Tile> borderGrids = new Dictionary<Vector2, Tile>();
     public int width, height;
     public Vector2 entryTilePos, exitTilePos;
+    public Vector2Int entrySide, exitSide;
 
     void Start()
     {
