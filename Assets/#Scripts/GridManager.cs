@@ -215,7 +215,7 @@ public class GridManager : MonoBehaviour
         
         tile.GetComponent<BoxCollider2D>().enabled = false;
         tile.gameObject.name = "EntryTile";
-
+        mapManager.entryTilePos = new Vector2(x,y);
         SetExitTile(entrySide);
     }
 
@@ -223,14 +223,15 @@ public class GridManager : MonoBehaviour
     {
         List<Vector2Int> possibleExitSides = new List<Vector2Int>() { Vector2Int.left, Vector2Int.up, Vector2Int.right, Vector2Int.down };
         possibleExitSides.Remove(entrySide);
-
         Vector2Int exitSide = possibleExitSides[Random.Range(0, possibleExitSides.Count)];
 
+        int y = 0, x = 0;
+        Tile tile = new Tile();
         if (exitSide == Vector2Int.left)
         {
-            int y = Random.Range(3, mapManager.height - 2);
-            int x = 0;
-            var tile = mapManager.borderGrids[new Vector2(0, y)];
+            y = Random.Range(3, mapManager.height - 2);
+            x = 0;
+            tile = mapManager.borderGrids[new Vector2(0, y)];
 
             tile.GetComponent<SpriteRenderer>().sprite = middleBridgeSprite;
 
@@ -254,9 +255,9 @@ public class GridManager : MonoBehaviour
         }
         else if (exitSide == Vector2Int.right)
         {
-            int y = Random.Range(3, mapManager.height - 2);
-            int x = mapManager.width - 1;
-            var tile = mapManager.borderGrids[new Vector2(mapManager.width - 1, y)];
+            y = Random.Range(3, mapManager.height - 2);
+            x = mapManager.width - 1;
+            tile = mapManager.borderGrids[new Vector2(mapManager.width - 1, y)];
             tile.gameObject.name = "ExitTile";
             
             tile = mapManager.borderGrids[new Vector2(mapManager.width - 1, y)];
@@ -283,9 +284,9 @@ public class GridManager : MonoBehaviour
         }
         else if (exitSide == Vector2Int.up)
         {
-            int x = Random.Range(3, mapManager.width - 2);
-            int y = mapManager.height - 1;
-            var tile = mapManager.borderGrids[new Vector2(x, mapManager.height - 1)];
+            x = Random.Range(3, mapManager.width - 2);
+            y = mapManager.height - 1;
+            tile = mapManager.borderGrids[new Vector2(x, mapManager.height - 1)];
 
             tile.GetComponent<SpriteRenderer>().sprite = topDownMiddleBridgeSprite;
             mapManager.borderGrids[new Vector2(x + 1, y)].GetComponent<SpriteRenderer>().sprite = topdownRightBridgeSprite;
@@ -306,9 +307,9 @@ public class GridManager : MonoBehaviour
         }
         else if (exitSide == Vector2Int.down)
         {
-            int x = Random.Range(1, mapManager.width - 2);
-            int y = 0;
-            var tile = mapManager.borderGrids[new Vector2(x, 0)];
+            x = Random.Range(1, mapManager.width - 2);
+            y = 0;
+            tile = mapManager.borderGrids[new Vector2(x, 0)];
 
             tile.GetComponent<SpriteRenderer>().sprite = topDownMiddleBridgeSprite;
             mapManager.borderGrids[new Vector2(x + 1, y)].GetComponent<SpriteRenderer>().sprite = topdownRightBridgeSprite;
@@ -326,5 +327,7 @@ public class GridManager : MonoBehaviour
             middleEndBridgeTile.GetComponent<SpriteRenderer>().sprite = downMiddleEndBridgeSprite;
             middleEndBridgeTile.transform.parent = currentMap.transform;
         }
+        tile.gameObject.name = "ExitTile";
+        mapManager.exitTilePos = new Vector2(x, y);
     }
 }
