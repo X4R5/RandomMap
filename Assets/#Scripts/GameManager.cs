@@ -8,11 +8,14 @@ using System.Linq;
 public class GameManager : MonoBehaviour
 {
     public static GameManager instance;
+
+
     [SerializeField] int mapCount;
     [SerializeField] int minWidth, maxWidth, minHeight, maxHeight;
     [SerializeField] GameObject leftBridgePrefab, rightBridgePrefab, topBridgePrefab, downBridgePrefab, creatingMapsCanvas;
     MapManager lastMapManager = null;
-    bool isAvailable = false, _isShowingWalkableTiles = false;
+    bool isAvailable = false;
+    public bool _isShowingWalkableTiles = false;
 
     List<Tile> _walkableTiles = new List<Tile>();
 
@@ -39,6 +42,7 @@ public class GameManager : MonoBehaviour
 
     public void ShowWalkableTiles()
     {
+        if (TurnManager.instance._isFree) return;
         if (_isShowingWalkableTiles)
         {
             HideWalkableTiles();
@@ -47,11 +51,14 @@ public class GameManager : MonoBehaviour
         if (PlayerController.instance.GetCurrentTile() == null) return;
         if (PlayerController.instance.GetCurrentTile().transform.parent.GetComponent<MapManager>() == null) return;
         if (PlayerController.instance._isWalking) return;
+
         SelectWalkableTiles();
+
         foreach (var tile in _walkableTiles)
         {
             tile.ShowWalkableHighlight();
         }
+        PlayerController.instance._canWalk = true;
         _isShowingWalkableTiles = true;
         //PlayerController.instance._canWalk = true;
     }

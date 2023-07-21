@@ -1123,7 +1123,7 @@ RectTransform:
   m_Children:
   - {fileID: 1922898888}
   m_Father: {fileID: 0}
-  m_RootOrder: 7
+  m_RootOrder: 8
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
@@ -1579,6 +1579,52 @@ BoxCollider2D:
   serializedVersion: 2
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
+--- !u!1 &846184161
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 846184163}
+  - component: {fileID: 846184162}
+  m_Layer: 0
+  m_Name: TurnManager
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &846184162
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 846184161}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd45ae89c84c9784eb9294ffc9d6b0f1, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _isFree: 1
+  _isPlayerTurn: 1
+--- !u!4 &846184163
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 846184161}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 3.095444, y: -0.56742454, z: -0.053650286}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 5
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &858024827
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1873,6 +1919,7 @@ MonoBehaviour:
   topBridgePrefab: {fileID: 4034028428040966284, guid: 26b625d9b905b124ab5e38d4e861fb86, type: 3}
   downBridgePrefab: {fileID: 3159002201748355671, guid: 0e362c80cb7d671429fa6154a6fd835a, type: 3}
   creatingMapsCanvas: {fileID: 1681182436}
+  _isShowingWalkableTiles: 0
 --- !u!4 &930111440
 Transform:
   m_ObjectHideFlags: 0
@@ -2036,7 +2083,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_RootOrder: 8
+  m_RootOrder: 9
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1016275810
 PrefabInstance:
@@ -3234,7 +3281,7 @@ Transform:
   - {fileID: 151605206}
   - {fileID: 772918624}
   m_Father: {fileID: 0}
-  m_RootOrder: 5
+  m_RootOrder: 6
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1474412189 stripped
 GameObject:
@@ -3649,7 +3696,7 @@ BoxCollider2D:
     adaptiveTiling: 0
   m_AutoTiling: 0
   serializedVersion: 2
-  m_Size: {x: 0.2, y: 0.2}
+  m_Size: {x: 0.1, y: 0.1}
   m_EdgeRadius: 0
 --- !u!50 &1619584395
 Rigidbody2D:
@@ -3707,8 +3754,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   version: 5
-  radius: 0.25
-  height: 0.25
+  radius: 0.1
+  height: 0.1
   canMove: 1
   maxSpeed: 4
   gravity: {x: NaN, y: NaN, z: NaN}
@@ -4035,7 +4082,7 @@ RectTransform:
   m_Children:
   - {fileID: 143661768}
   m_Father: {fileID: 0}
-  m_RootOrder: 6
+  m_RootOrder: 7
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}

@@ -32,6 +32,18 @@ public class PlayerController : MonoBehaviour
         Move();
     }
 
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.name == "EntryTile")
+        {
+            _rb.velocity = Vector2.zero;
+            TurnManager.instance._isFree = false;
+            _isWalking = false;
+            _currentTile = collision.GetComponent<Tile>();
+            SetTargetMoveTile(collision.GetComponent<Tile>());
+        }
+    }
+
     private void Move()
     {
 
@@ -57,6 +69,7 @@ public class PlayerController : MonoBehaviour
     private void OnPathComplete(Path p)
     {
         _isWalking = false;
+        if(!TurnManager.instance._isFree) _canWalk = false;
     }
 
     public void SetCurrentTile(Tile tile)
@@ -66,7 +79,6 @@ public class PlayerController : MonoBehaviour
 
     public void SetTargetMoveTile(Tile tile)
     {
-        if (!_canWalk) return;
         if(_isWalking) return;
 
         _targetMoveTile = tile;

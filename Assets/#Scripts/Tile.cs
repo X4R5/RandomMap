@@ -23,10 +23,19 @@ public class Tile : MonoBehaviour
     private void OnMouseDown()
     {
         if (!_usable) return;
-        if (PlayerController.instance._isWalking) return;
-        if (!PlayerController.instance._canWalk) return;
+        if (!TurnManager.instance._isFree)
+        {
+            if (PlayerController.instance._isWalking) return;
+            //if (!TurnManager.instance._isPlayerTurn) return;
+        }
+        
+        if (TurnManager.instance._isFree || (GameManager.instance._isShowingWalkableTiles && PlayerController.instance.GetCurrentTile().Neighbours().Contains(this)))
+        {
+            Debug.Log("Tile clicked");
+            PlayerController.instance.SetTargetMoveTile(this);
+        }
+
         GameManager.instance.HideWalkableTiles();
-        PlayerController.instance.SetTargetMoveTile(this);
     }
 
     public void ShowWalkableHighlight()
@@ -54,9 +63,12 @@ public class Tile : MonoBehaviour
             {
                 if (x == 0 && y == 0) continue;
 
-                if (mapManager.insideGrids[new Vector2(_x + x,  _y + y)] != null)
+                Tile neighbour = null;
+                mapManager.insideGrids.TryGetValue(new Vector2(_x + x, _y + y), out neighbour);
+                if (neighbour != null)
                 {
-                    neighbours.Add(mapManager.insideGrids[new Vector2(_x + x, _y + y)]);
+                    
+                    neighbours.Add(neighbour);
                 }
             }
         }
