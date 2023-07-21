@@ -7,6 +7,7 @@ using System.Linq;
 
 public class GameManager : MonoBehaviour
 {
+    public static GameManager instance;
     [SerializeField] int mapCount;
     [SerializeField] int minWidth, maxWidth, minHeight, maxHeight;
     [SerializeField] GameObject leftBridgePrefab, rightBridgePrefab, topBridgePrefab, downBridgePrefab, creatingMapsCanvas;
@@ -14,6 +15,11 @@ public class GameManager : MonoBehaviour
     bool isAvailable = false, _isShowingWalkableTiles = false;
 
     List<Tile> _walkableTiles = new List<Tile>();
+
+    private void Awake()
+    {
+        instance = this;
+    }
 
     private void Start()
     {

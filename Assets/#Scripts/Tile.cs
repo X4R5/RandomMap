@@ -25,6 +25,7 @@ public class Tile : MonoBehaviour
         if (!_usable) return;
         if (PlayerController.instance._isWalking) return;
         if (!PlayerController.instance._canWalk) return;
+        GameManager.instance.HideWalkableTiles();
         PlayerController.instance.SetTargetMoveTile(this);
     }
 
