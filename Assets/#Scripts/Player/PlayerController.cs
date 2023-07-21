@@ -9,13 +9,16 @@ using UnityEngine;
 public class PlayerController : MonoBehaviour
 {
     public static PlayerController instance;
+
+    public bool _canWalk = true, _isWalking = false;
+
     Tile _currentTile, _targetMoveTile;
+
     [SerializeField] Tile _startTile;
     [SerializeField] float _moveSpeed = 1f;
     Path _path;
     Seeker _seeker;
     Rigidbody2D _rb;
-    bool _walk = false;
     private void Awake()
     {
         instance = this;
@@ -26,7 +29,13 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        if (!_walk) return;
+        Move();
+    }
+
+    private void Move()
+    {
+
+        if (!_isWalking) return;
         _seeker.StartPath(_rb.position, _targetMoveTile.transform.position, OnPathComplete);
         if (_path == null) return;
         if (_path.vectorPath.Count == 0) return;
@@ -40,9 +49,14 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public Tile GetCurrentTile()
+    {
+        return _currentTile;
+    }
+
     private void OnPathComplete(Path p)
     {
-        _walk = false;
+        _isWalking = false;
     }
 
     public void SetCurrentTile(Tile tile)
@@ -52,7 +66,10 @@ public class PlayerController : MonoBehaviour
 
     public void SetTargetMoveTile(Tile tile)
     {
+        if (!_canWalk) return;
+        if(_isWalking) return;
+
         _targetMoveTile = tile;
-        _walk = true;
+        _isWalking = true;
     }
 }

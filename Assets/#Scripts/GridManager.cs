@@ -46,6 +46,8 @@ public class GridManager : MonoBehaviour
             {
                 GameObject tile = Instantiate(tilePrefab, new Vector3(x, y, 0), Quaternion.identity);
                 tile.transform.parent = currentMap.transform;
+                tile.GetComponent<Tile>()._x = x;
+                tile.GetComponent<Tile>()._y = y;
                 if (x == 0 || x == width - 1 || y == 0 || y == height - 1)
                 {
                     SetBorderTile(tile ,x, y, height, width);
@@ -118,7 +120,7 @@ public class GridManager : MonoBehaviour
                 tile.GetComponent<SpriteRenderer>().sprite = rightWallSprite;
             }
         }
-        tile.GetComponent<Tile>().usable = false;
+        tile.GetComponent<Tile>()._usable = false;
         tile.GetComponent<BoxCollider2D>().enabled = true;
         tile.GetComponent<BoxCollider2D>().isTrigger = false;
         tile.layer = 6;
@@ -265,7 +267,7 @@ public class GridManager : MonoBehaviour
             tile_.gameObject.name = "BridgeTile";
             tile_.gameObject.layer = 6;
             tile_.GetComponent<BoxCollider2D>().isTrigger = false;
-            tile_.usable = false;
+            tile_._usable = false;
             if (tile_.GetComponent<SpriteRenderer>().sprite == baseSprite || tile_.GetComponent<SpriteRenderer>().sprite == secondSprite) continue;
             tile_.GetComponent<SpriteRenderer>().sortingOrder = 1;
         }
@@ -273,7 +275,7 @@ public class GridManager : MonoBehaviour
         tile.gameObject.name = "EntryTile";
         tile.gameObject.layer = 6;
         tile.GetComponent<BoxCollider2D>().isTrigger = true;
-        tile.GetComponent<Tile>().usable = true;
+        tile.GetComponent<Tile>()._usable = true;
         currentMapManager.entryTilePos = new Vector2(x,y);
         if(setExitTile) SetExitTile(entrySide);
     }
@@ -432,7 +434,7 @@ public class GridManager : MonoBehaviour
 
         foreach (var tile_ in tiles)
         {
-            tile_.usable = false;
+            tile_._usable = false;
             tile_.gameObject.name = "BridgeTile";
             tile_.gameObject.layer = 6;
             tile_.GetComponent<BoxCollider2D>().isTrigger = false;
@@ -441,7 +443,7 @@ public class GridManager : MonoBehaviour
         }
 
         tile.gameObject.name = "ExitTile";
-        tile.GetComponent<Tile>().usable = true;
+        tile.GetComponent<Tile>()._usable = true;
         tile.GetComponent<Tile>().gameObject.layer = 7;
         tile.GetComponent<BoxCollider2D>().isTrigger = true;
         currentMapManager.exitTilePos = new Vector2(x, y);

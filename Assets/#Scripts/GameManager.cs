@@ -11,7 +11,9 @@ public class GameManager : MonoBehaviour
     [SerializeField] int minWidth, maxWidth, minHeight, maxHeight;
     [SerializeField] GameObject leftBridgePrefab, rightBridgePrefab, topBridgePrefab, downBridgePrefab, creatingMapsCanvas;
     MapManager lastMapManager = null;
-    bool isAvailable = false;
+    bool isAvailable = false, _isShowingWalkableTiles = false;
+
+    List<Tile> _walkableTiles = new List<Tile>();
 
     private void Start()
     {
@@ -29,6 +31,41 @@ public class GameManager : MonoBehaviour
         //}
     }
 
+    public void ShowWalkableTiles()
+    {
+        if (_isShowingWalkableTiles)
+        {
+            HideWalkableTiles();
+            return;
+        }
+        if (PlayerController.instance.GetCurrentTile() == null) return;
+        if (PlayerController.instance.GetCurrentTile().transform.parent.GetComponent<MapManager>() == null) return;
+        if (PlayerController.instance._isWalking) return;
+        SelectWalkableTiles();
+        foreach (var tile in _walkableTiles)
+        {
+            tile.ShowWalkableHighlight();
+        }
+        _isShowingWalkableTiles = true;
+        //PlayerController.instance._canWalk = true;
+    }
+    public void HideWalkableTiles()
+    {
+        foreach (var tile in _walkableTiles)
+        {
+            tile.HideWalkableHighlight();
+        }
+        _isShowingWalkableTiles = false;
+    }
+
+    void SelectWalkableTiles()
+    {
+        _walkableTiles.Clear();
+        foreach (Tile tile in PlayerController.instance.GetCurrentTile().Neighbours())
+        {
+            _walkableTiles.Add(tile);
+        }
+    }
 
     async Task ScanAstar()
     {
@@ -44,7 +81,7 @@ public class GameManager : MonoBehaviour
         var newDepth = FintTopTileIndex() - FintBottomTileIndex();
         if (astarPath != null)
         {
-            astarPath.data.gridGraph.SetDimensions((int)newWidth + 2, (int)newDepth + 2, astarPath.data.gridGraph.nodeSize);
+            astarPath.data.gridGraph.SetDimensions(((int)newWidth * 2) + 10, ((int)newDepth * 2) + 10, astarPath.data.gridGraph.nodeSize);
             var center = new Vector3(FintLeftTileIndex() + (newWidth / 2), FintBottomTileIndex() + (newDepth / 2), astarPath.data.gridGraph.center.z);
             astarPath.data.gridGraph.center = center;
         }
@@ -166,6 +203,8 @@ public class GameManager : MonoBehaviour
         await Task.Delay(1000);
         creatingMapsCanvas.SetActive(false);
     }
+
+
 
     private async Task CheckIfAvailable(MapManager newMap)
     {
