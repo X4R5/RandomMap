@@ -129,6 +129,7 @@ public class GridManager : MonoBehaviour
         int y = 0, x = 0;
         Tile tile = null;
         List<Tile> tiles = new List<Tile>();
+        Tile middleEndBridgeTile_ = null;
 
         if (entrySide == Vector2Int.left)
         {
@@ -156,6 +157,8 @@ public class GridManager : MonoBehaviour
             var middleEndBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x + 1, y)].transform.position, Quaternion.identity);
             middleEndBridgeTile.GetComponent<SpriteRenderer>().sprite = middleEndBridgeSprite;
             middleEndBridgeTile.transform.parent = currentMap.transform;
+            middleEndBridgeTile_ = middleEndBridgeTile.GetComponent<Tile>();
+            
             //tiles.Add(middleEndBridgeTile.GetComponent<Tile>());
             //tiles.Add(currentMapManager.insideGrids[new Vector2(x + 1, y)].GetComponent<Tile>());
 
@@ -187,6 +190,7 @@ public class GridManager : MonoBehaviour
             var middleEndBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x - 1, y)].transform.position, Quaternion.identity);
             middleEndBridgeTile.GetComponent<SpriteRenderer>().sprite = middleEndBridgeSprite;
             middleEndBridgeTile.transform.parent = currentMap.transform;
+            middleEndBridgeTile_ = middleEndBridgeTile.GetComponent<Tile>();
             //tiles.Add(middleEndBridgeTile.GetComponent<Tile>());
             //tiles.Add(currentMapManager.insideGrids[new Vector2(x - 1, y)].GetComponent<Tile>());
 
@@ -218,6 +222,7 @@ public class GridManager : MonoBehaviour
             var middleEndBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x, y - 1)].transform.position, Quaternion.identity);
             middleEndBridgeTile.GetComponent<SpriteRenderer>().sprite = topMiddleEndBridgeSprite;
             middleEndBridgeTile.transform.parent = currentMap.transform;
+            middleEndBridgeTile_ = middleEndBridgeTile.GetComponent<Tile>();
             //tiles.Add(middleEndBridgeTile.GetComponent<Tile>());
             //tiles.Add(currentMapManager.insideGrids[new Vector2(x, y - 1)].GetComponent<Tile>());
         }
@@ -247,10 +252,13 @@ public class GridManager : MonoBehaviour
             var middleEndBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x, y + 1)].transform.position, Quaternion.identity);
             middleEndBridgeTile.GetComponent<SpriteRenderer>().sprite = downMiddleEndBridgeSprite;
             middleEndBridgeTile.transform.parent = currentMap.transform;
+            middleEndBridgeTile_ = middleEndBridgeTile.GetComponent<Tile>();
             //tiles.Add(middleEndBridgeTile.GetComponent<Tile>());
             //tiles.Add(currentMapManager.insideGrids[new Vector2(x, y + 1)].GetComponent<Tile>());
         }
         
+        middleEndBridgeTile_.gameObject.name = "BridgeTile";
+        middleEndBridgeTile_.GetComponent<SpriteRenderer>().sortingOrder = 1;
 
         foreach (var tile_ in tiles)
         {
@@ -258,6 +266,8 @@ public class GridManager : MonoBehaviour
             tile_.gameObject.layer = 6;
             tile_.GetComponent<BoxCollider2D>().isTrigger = false;
             tile_.usable = false;
+            if (tile_.GetComponent<SpriteRenderer>().sprite == baseSprite || tile_.GetComponent<SpriteRenderer>().sprite == secondSprite) continue;
+            tile_.GetComponent<SpriteRenderer>().sortingOrder = 1;
         }
 
         tile.gameObject.name = "EntryTile";
@@ -277,6 +287,7 @@ public class GridManager : MonoBehaviour
 
         int y = 0, x = 0;
         Tile tile = null;
+        Tile middleEndBridgeTile_ = null;
 
         List<Tile> tiles = new List<Tile>();
 
@@ -310,6 +321,7 @@ public class GridManager : MonoBehaviour
             var middleEndBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x + 1, y)].transform.position, Quaternion.identity);
             middleEndBridgeTile.GetComponent<SpriteRenderer>().sprite = middleEndBridgeSprite;
             middleEndBridgeTile.transform.parent = currentMap.transform;
+            middleEndBridgeTile_ = middleEndBridgeTile.GetComponent<Tile>();
             //tiles.Add(middleEndBridgeTile.GetComponent<Tile>());
             //tiles.Add(currentMapManager.insideGrids[new Vector2(x + 1, y)].GetComponent<Tile>());
 
@@ -343,6 +355,7 @@ public class GridManager : MonoBehaviour
             var middleEndBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x - 1, y)].transform.position, Quaternion.identity);
             middleEndBridgeTile.GetComponent<SpriteRenderer>().sprite = middleEndBridgeSprite;
             middleEndBridgeTile.transform.parent = currentMap.transform;
+            middleEndBridgeTile_ = middleEndBridgeTile.GetComponent<Tile>();
             //tiles.Add(middleEndBridgeTile.GetComponent<Tile>());
             //tiles.Add(currentMapManager.insideGrids[new Vector2(x - 1, y)].GetComponent<Tile>());
 
@@ -377,6 +390,7 @@ public class GridManager : MonoBehaviour
             var middleEndBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x, y - 1)].transform.position, Quaternion.identity);
             middleEndBridgeTile.GetComponent<SpriteRenderer>().sprite = topMiddleEndBridgeSprite;
             middleEndBridgeTile.transform.parent = currentMap.transform;
+            middleEndBridgeTile_ = middleEndBridgeTile.GetComponent<Tile>();
             //tiles.Add(middleEndBridgeTile.GetComponent<Tile>());
             //tiles.Add(currentMapManager.insideGrids[new Vector2(x, y - 1)].GetComponent<Tile>());
 
@@ -408,10 +422,13 @@ public class GridManager : MonoBehaviour
             var middleEndBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x, y + 1)].transform.position, Quaternion.identity);
             middleEndBridgeTile.GetComponent<SpriteRenderer>().sprite = downMiddleEndBridgeSprite;
             middleEndBridgeTile.transform.parent = currentMap.transform;
+            middleEndBridgeTile_ = middleEndBridgeTile.GetComponent<Tile>();
             //tiles.Add(middleEndBridgeTile.GetComponent<Tile>());
             //tiles.Add(currentMapManager.insideGrids[new Vector2(x, y + 1)].GetComponent<Tile>());
         }
 
+        middleEndBridgeTile_.gameObject.name = "BridgeTile";
+        middleEndBridgeTile_.GetComponent<SpriteRenderer>().sortingOrder = 1;
 
         foreach (var tile_ in tiles)
         {
@@ -419,6 +436,8 @@ public class GridManager : MonoBehaviour
             tile_.gameObject.name = "BridgeTile";
             tile_.gameObject.layer = 6;
             tile_.GetComponent<BoxCollider2D>().isTrigger = false;
+            if (tile_.GetComponent<SpriteRenderer>().sprite == baseSprite || tile_.GetComponent<SpriteRenderer>().sprite == secondSprite) continue;
+            tile_.GetComponent<SpriteRenderer>().sortingOrder = 1;
         }
 
         tile.gameObject.name = "ExitTile";
