@@ -9,7 +9,7 @@ public class GameManager : MonoBehaviour
 {
     [SerializeField] int mapCount;
     [SerializeField] int minWidth, maxWidth, minHeight, maxHeight;
-    [SerializeField] GameObject leftBridgePrefab, rightBridgePrefab, topBridgePrefab, downBridgePrefab;
+    [SerializeField] GameObject leftBridgePrefab, rightBridgePrefab, topBridgePrefab, downBridgePrefab, creatingMapsCanvas;
     MapManager lastMapManager = null;
     bool isAvailable = false;
 
@@ -30,13 +30,14 @@ public class GameManager : MonoBehaviour
     }
 
 
-    void ScanAstar()
+    async Task ScanAstar()
     {
         var astarPath = GameObject.FindGameObjectWithTag("Astar").GetComponent<AstarPath>();
         astarPath.Scan();
+        await Task.Yield();
     }
 
-    void ChangeAstarGridSize()
+    async Task ChangeAstarGridSize()
     {
         var astarPath = GameObject.FindGameObjectWithTag("Astar")?.GetComponent<AstarPath>();
         var newWidth = FintRightTileIndex() - FintLeftTileIndex();
@@ -47,6 +48,8 @@ public class GameManager : MonoBehaviour
             var center = new Vector3(FintLeftTileIndex() + (newWidth / 2), FintBottomTileIndex() + (newDepth / 2), astarPath.data.gridGraph.center.z);
             astarPath.data.gridGraph.center = center;
         }
+
+        await Task.Yield();
     }
 
     float FintTopTileIndex()
@@ -116,7 +119,7 @@ public class GameManager : MonoBehaviour
 
     private async void CreateMaps()
     {
-        Debug.Log("CreateMaps " + Time.time);
+        creatingMapsCanvas.SetActive(true);
         int k = 0;
         for (int i = 0; i < mapCount; i++)
         {
@@ -158,9 +161,10 @@ public class GameManager : MonoBehaviour
 
             lastMapManager = newMap;
         }
-        ChangeAstarGridSize();
-        ScanAstar();
-        Debug.Log("CreateMaps " + Time.time);
+        await ChangeAstarGridSize();
+        await ScanAstar();
+        await Task.Delay(1000);
+        creatingMapsCanvas.SetActive(false);
     }
 
     private async Task CheckIfAvailable(MapManager newMap)
