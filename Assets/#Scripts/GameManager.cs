@@ -1,6 +1,9 @@
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using UnityEngine;
+using Pathfinding;
+using System.Linq;
 
 public class GameManager : MonoBehaviour
 {
@@ -8,18 +11,102 @@ public class GameManager : MonoBehaviour
     [SerializeField] int minWidth, maxWidth, minHeight, maxHeight;
     [SerializeField] GameObject leftBridgePrefab, rightBridgePrefab, topBridgePrefab, downBridgePrefab;
     MapManager lastMapManager = null;
+    bool isAvailable = false;
+
+    private void Start()
+    {
+        CreateMaps();
+    }
+
+
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Space))
+        //if (Input.GetKeyDown(KeyCode.Space))
+        //{
+        //    lastMapManager = null;
+        //    DestroyCurrentMaps();
+        //    CreateMaps();
+        //}
+    }
+
+
+    void ScanAstar()
+    {
+        var astarPath = GameObject.FindGameObjectWithTag("Astar").GetComponent<AstarPath>();
+        astarPath.Scan();
+    }
+
+    void ChangeAstarGridSize()
+    {
+        var astarPath = GameObject.FindGameObjectWithTag("Astar")?.GetComponent<AstarPath>();
+        var newWidth = FintRightTileIndex() - FintLeftTileIndex();
+        var newDepth = FintTopTileIndex() - FintBottomTileIndex();
+        if (astarPath != null)
         {
-            lastMapManager = null;
-            DestroyCurrentMaps();
-            CreateMaps();
+            astarPath.data.gridGraph.SetDimensions((int)newWidth + 2, (int)newDepth + 2, astarPath.data.gridGraph.nodeSize);
+            var center = new Vector3(FintLeftTileIndex() + (newWidth / 2), FintBottomTileIndex() + (newDepth / 2), astarPath.data.gridGraph.center.z);
+            astarPath.data.gridGraph.center = center;
         }
+    }
+
+    float FintTopTileIndex()
+    {
+        float topTileY = -9999;
+        var allTileObjects = GameObject.FindGameObjectsWithTag("Tile");
+        foreach (var tile in allTileObjects)
+        {
+            if (tile.transform.position.y > topTileY)
+            {
+                topTileY = tile.transform.position.y;
+            }
+        }
+        return topTileY + 0.5f;
+    }
+    float FintBottomTileIndex()
+    {
+        float Y = 9999;
+        var allTileObjects = GameObject.FindGameObjectsWithTag("Tile");
+        foreach (var tile in allTileObjects)
+        {
+            if (tile.transform.position.y < Y)
+            {
+                Y = tile.transform.position.y;
+            }
+        }
+        return Y + 0.5f;
+    }
+
+    float FintRightTileIndex()
+    {
+        float X = -9999;
+        var allTileObjects = GameObject.FindGameObjectsWithTag("Tile");
+        foreach (var tile in allTileObjects)
+        {
+            if (tile.transform.position.x > X)
+            {
+                X = tile.transform.position.x;
+            }
+        }
+        return X + 0.5f;
+    }
+
+    float FintLeftTileIndex()
+    {
+        float X = 9999;
+        var allTileObjects = GameObject.FindGameObjectsWithTag("Tile");
+        foreach (var tile in allTileObjects)
+        {
+            if (tile.transform.position.x < X)
+            {
+                X = tile.transform.position.x;
+            }
+        }
+        return X + 0.5f;
     }
 
     private void DestroyCurrentMaps()
     {
+        lastMapManager = null;
         var currentMaps = GameObject.FindGameObjectsWithTag("Map");
         foreach (var map in currentMaps)
         {
@@ -27,9 +114,10 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void CreateMaps()
+    private async void CreateMaps()
     {
-
+        Debug.Log("CreateMaps " + Time.time);
+        int k = 0;
         for (int i = 0; i < mapCount; i++)
         {
             bool setExitTile = i == mapCount - 1 ? false : true;
@@ -38,14 +126,264 @@ public class GameManager : MonoBehaviour
 
             var entrySide = SelectEntrySide();
             var newMap = GridManager.Instance.CreateMap(entrySide, width, height, setExitTile);
+            newMap.name = "Map" + k;
+            k++;
 
-            ConnectMapToLastMap(newMap);
+            //if(k >= 50)
+            //{
+            //    DestroyCurrentMaps();
+            //    CreateMaps();
+            //}
+
+            await ConnectMapToLastMap(newMap);
+
+            await CheckIfAvailable(newMap);
+
+            if (!isAvailable)
+            {
+                Destroy(newMap.gameObject);
+                i--;
+                continue;
+                //Debug.Log(newMap.name);
+            }
+
+            //if(newMap.exitSide == Vector2.left)
+            //{
+            //    width *= -1;
+            //}
+            //else if(newMap.exitSide == Vector2.down)
+            //{
+            //    height *= -1;
+            //}
 
             lastMapManager = newMap;
         }
+        ChangeAstarGridSize();
+        ScanAstar();
+        Debug.Log("CreateMaps " + Time.time);
     }
 
-    private void ConnectMapToLastMap(MapManager newMap)
+    private async Task CheckIfAvailable(MapManager newMap)
+    {
+        isAvailable = true;
+
+        await CheckBorderTiles(newMap);
+        await CheckInsideTiles(newMap);
+
+
+        await Task.Yield();
+    }
+
+    private async Task CheckBorderTiles(MapManager newMap)
+    {
+        foreach (var tile in newMap.borderGrids.Keys)
+        {
+            await CheckDownSide(newMap, tile);
+            if (!isAvailable)
+            {
+                break;
+            }
+            await CheckUpSide(newMap, tile);
+            if (!isAvailable)
+            {
+                break;
+            }
+            await CheckLeftSide(newMap, tile);
+            if (!isAvailable)
+            {
+                break;
+            }
+            await CheckRightSide(newMap, tile);
+            if (!isAvailable)
+            {
+                break;
+            }
+        }
+        await Task.Yield();
+    }
+
+    private async Task CheckInsideTiles(MapManager newMap)
+    {
+        foreach (var tile in newMap.insideGrids.Keys)
+        {
+            await CheckInsideDownSide(newMap, tile);
+            if (!isAvailable)
+            {
+                break;
+            }
+            await CheckInsideUpSide(newMap, tile);
+            if (!isAvailable)
+            {
+                break;
+            }
+            await CheckInsideLeftSide(newMap, tile);
+            if (!isAvailable)
+            {
+                break;
+            }
+            await CheckInsideRightSide(newMap, tile);
+            if (!isAvailable)
+            {
+                break;
+            }
+        }
+        await Task.Yield();
+    }
+
+    private async Task CheckInsideRightSide(MapManager newMap, Vector2 tile)
+    {
+        Debug.Log("right");
+        RaycastHit2D hit = Physics2D.Raycast(newMap.insideGrids[tile].transform.position + new Vector3(0.5f, 0), Vector2.right, 1);
+        if (hit.collider != null)
+        {
+            if (hit.collider.CompareTag("Tile"))
+            {
+                if (newMap.insideGrids[tile].transform.parent == hit.collider.transform.parent || hit.collider.transform.parent.CompareTag("Bridge"))
+                {
+                    return;
+                }
+                isAvailable = false;
+                Debug.Log("right + " + tile + " " + newMap.name);
+            }
+        }
+        await Task.Yield();
+    }
+
+    private async Task CheckInsideLeftSide(MapManager newMap, Vector2 tile)
+    {
+        Debug.Log("right");
+        RaycastHit2D hit = Physics2D.Raycast(newMap.insideGrids[tile].transform.position + new Vector3(0.5f, 0), Vector2.left, 1);
+        if (hit.collider != null)
+        {
+            if (hit.collider.CompareTag("Tile"))
+            {
+                if (newMap.insideGrids[tile].transform.parent == hit.collider.transform.parent || hit.collider.transform.parent.CompareTag("Bridge"))
+                {
+                    return;
+                }
+                isAvailable = false;
+                Debug.Log("right + " + tile + " " + newMap.name);
+            }
+        }
+        await Task.Yield();
+    }
+
+    private async Task CheckInsideUpSide(MapManager newMap, Vector2 tile)
+    {
+        Debug.Log("right");
+        RaycastHit2D hit = Physics2D.Raycast(newMap.insideGrids[tile].transform.position + new Vector3(0.5f, 0), Vector2.up, 1);
+        if (hit.collider != null)
+        {
+            if (hit.collider.CompareTag("Tile"))
+            {
+                if (newMap.insideGrids[tile].transform.parent == hit.collider.transform.parent || hit.collider.transform.parent.CompareTag("Bridge"))
+                {
+                    return;
+                }
+                isAvailable = false;
+                Debug.Log("right + " + tile + " " + newMap.name);
+            }
+        }
+        await Task.Yield();
+    }
+
+    private async Task CheckInsideDownSide(MapManager newMap, Vector2 tile)
+    {
+        Debug.Log("right");
+        RaycastHit2D hit = Physics2D.Raycast(newMap.insideGrids[tile].transform.position + new Vector3(0.5f, 0), Vector2.down, 1);
+        if (hit.collider != null)
+        {
+            if (hit.collider.CompareTag("Tile"))
+            {
+                if (newMap.insideGrids[tile].transform.parent == hit.collider.transform.parent || hit.collider.transform.parent.CompareTag("Bridge"))
+                {
+                    return;
+                }
+                isAvailable = false;
+                Debug.Log("right + " + tile + " " + newMap.name);
+            }
+        }
+        await Task.Yield();
+    }
+
+    private async Task CheckRightSide(MapManager newMap, Vector2 tile)
+    {
+        Debug.Log("right");
+        RaycastHit2D hit = Physics2D.Raycast(newMap.borderGrids[tile].transform.position + new Vector3(0.5f, 0), Vector2.right, 1);
+        if (hit.collider != null)
+        {
+            if (hit.collider.CompareTag("Tile"))
+            {
+                if (newMap.borderGrids[tile].transform.parent == hit.collider.transform.parent || hit.collider.transform.parent.CompareTag("Bridge"))
+                {
+                    return;
+                }
+                isAvailable = false;
+                Debug.Log("right + " + tile + " " + newMap.name);
+            }
+        }
+        await Task.Yield();
+    }
+
+    private async Task CheckLeftSide(MapManager newMap, Vector2 tile)
+    {
+        Debug.Log("left");
+        RaycastHit2D hit = Physics2D.Raycast(newMap.borderGrids[tile].transform.position + new Vector3(-0.5f, 0), Vector2.left, 1);
+        if (hit.collider != null)
+        {
+            if (hit.collider.CompareTag("Tile"))
+            {
+                if (newMap.borderGrids[tile].transform.parent == hit.collider.transform.parent || hit.collider.transform.parent.CompareTag("Bridge"))
+                {
+                    return;
+                }
+                isAvailable = false;
+                Debug.Log("left + " + tile + " " + newMap.name);
+            }
+        }
+
+        await Task.Yield();
+    }
+
+    private async Task CheckUpSide(MapManager newMap, Vector2 tile)
+    {
+        Debug.Log("up");
+        RaycastHit2D hit = Physics2D.Raycast(newMap.borderGrids[tile].transform.position + new Vector3(0, 0.5f), Vector2.up, 1f);
+        if (hit.collider != null)
+        {
+            if (hit.collider.CompareTag("Tile"))
+            {
+                if (newMap.borderGrids[tile].transform.parent == hit.collider.transform.parent || hit.collider.transform.parent.CompareTag("Bridge"))
+                {
+                    return;
+                }
+                isAvailable = false;
+                Debug.Log("Left + " + tile + " " + newMap.name);
+            }
+        }
+        await Task.Yield();
+    }
+
+    private async Task CheckDownSide(MapManager newMap, Vector2 tile)
+    {
+        Debug.Log("down");
+        RaycastHit2D hit = Physics2D.Raycast(newMap.borderGrids[tile].transform.position + new Vector3(0, -0.5f), Vector2.down, 1);
+        if (hit.collider != null)
+        {
+            if (hit.collider.CompareTag("Tile"))
+            {
+                if (newMap.borderGrids[tile].transform.parent == hit.collider.transform.parent || hit.collider.transform.parent.CompareTag("Bridge"))
+                {
+                    return;
+                }
+                isAvailable = false;
+                Debug.Log("Down + " + tile + " " + newMap.name);
+            }
+        }
+        await Task.Yield();
+    }
+
+    private async Task ConnectMapToLastMap(MapManager newMap)
     {
         Vector3 offset = Vector3.zero;
         if(lastMapManager == null)
@@ -62,6 +400,7 @@ public class GameManager : MonoBehaviour
             offset = newBridge.transform.Find("EndPos").position - newMap.borderGrids[newMap.entryTilePos].transform.position;
             newMap.transform.position += offset;
         }
+        await Task.Yield();
     }
 
     GameObject CreateBridge()

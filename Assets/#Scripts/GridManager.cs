@@ -22,7 +22,7 @@ public class GridManager : MonoBehaviour
     [SerializeField] Sprite topdownLeftBridgeSprite, topdownRightBridgeSprite, topDownMiddleBridgeSprite, topMiddleEndBridgeSprite, downMiddleEndBridgeSprite;
 
     GameObject currentMap;
-    MapManager mapManager;
+    MapManager currentMapManager;
 
     private void Awake()
     {
@@ -36,10 +36,10 @@ public class GridManager : MonoBehaviour
     public MapManager CreateMap(Vector2Int entrySide ,int width, int height, bool addExitTile)
     {
         currentMap = Instantiate(mapPrefab, new Vector3(width / 2, height / 2, 0), Quaternion.identity);
-        mapManager = currentMap.GetComponent<MapManager>();
-        mapManager.entrySide = entrySide;
-        mapManager.width = width;
-        mapManager.height = height;
+        currentMapManager = currentMap.GetComponent<MapManager>();
+        currentMapManager.entrySide = entrySide;
+        currentMapManager.width = width;
+        currentMapManager.height = height;
         for (int x = 0; x < width; x++)
         {
             for(int y = 0; y < height; y++)
@@ -49,12 +49,14 @@ public class GridManager : MonoBehaviour
                 if (x == 0 || x == width - 1 || y == 0 || y == height - 1)
                 {
                     SetBorderTile(tile ,x, y, height, width);
-                    mapManager.borderGrids.Add(new Vector2(x, y), tile.GetComponent<Tile>());
-                    tile.GetComponent<BoxCollider2D>().enabled = true;
+                    currentMapManager.borderGrids.Add(new Vector2(x, y), tile.GetComponent<Tile>());
+                    tile.GetComponent<BoxCollider2D>().isTrigger = false;
+                    tile.layer = 6;
                 }
                 else
                 {
-                    mapManager.insideGrids.Add(new Vector2(x, y), tile.GetComponent<Tile>());
+                    currentMapManager.insideGrids.Add(new Vector2(x, y), tile.GetComponent<Tile>());
+                    tile.layer = 7;
 
                     if (x % 2 == 0 && y % 2 == 0)
                     {
@@ -72,7 +74,7 @@ public class GridManager : MonoBehaviour
             }
         }
         SetEntryTile(entrySide, addExitTile);
-        return mapManager;
+        return currentMapManager;
     }
 
     private void SetBorderTile(GameObject tile, int x, int y, int height, int width)
@@ -116,109 +118,153 @@ public class GridManager : MonoBehaviour
                 tile.GetComponent<SpriteRenderer>().sprite = rightWallSprite;
             }
         }
+        tile.GetComponent<Tile>().usable = false;
+        tile.GetComponent<BoxCollider2D>().enabled = true;
+        tile.GetComponent<BoxCollider2D>().isTrigger = false;
+        tile.layer = 6;
     }
 
     private void SetEntryTile(Vector2Int entrySide, bool setExitTile)
     {
         int y = 0, x = 0;
-        Tile tile = new Tile();
+        Tile tile = null;
+        List<Tile> tiles = new List<Tile>();
 
         if (entrySide == Vector2Int.left)
         {
-            y = Random.Range(3, mapManager.height - 3);
+            y = Random.Range(3, currentMapManager.height - 3);
             x = 0;
-            tile = mapManager.borderGrids[new Vector2(0, y)];
+            tile = currentMapManager.borderGrids[new Vector2(0, y)];
             tile.GetComponent<SpriteRenderer>().sprite = middleBridgeSprite;
 
-            mapManager.borderGrids[new Vector2(x, y + 1)].GetComponent<SpriteRenderer>().sprite = topBridgeSprite;
+            currentMapManager.borderGrids[new Vector2(x, y + 1)].GetComponent<SpriteRenderer>().sprite = topBridgeSprite;
 
-            var rightTopBridgeTile = Instantiate(tilePrefab, mapManager.insideGrids[new Vector2(x + 1, y + 1)].transform.position, Quaternion.identity);
+            var rightTopBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x + 1, y + 1)].transform.position, Quaternion.identity);
             rightTopBridgeTile.GetComponent<SpriteRenderer>().sprite = rightTopBridgeSprite;
             rightTopBridgeTile.transform.parent = currentMap.transform;
+            tiles.Add(rightTopBridgeTile.GetComponent<Tile>());
+            tiles.Add(currentMapManager.insideGrids[new Vector2(x + 1, y + 1)].GetComponent<Tile>());
+            //currentMapManager.insideGrids[new Vector2(x + 1, y + 1)].GetComponent<Tile>().usable = false;
+            //rightTopBridgeTile.GetComponent<Tile>().usable = false;
 
-            var rightDownBridgeTile = Instantiate(tilePrefab, mapManager.insideGrids[new Vector2(x + 1, y - 1)].transform.position, Quaternion.identity);
+            var rightDownBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x + 1, y - 1)].transform.position, Quaternion.identity);
             rightDownBridgeTile.GetComponent<SpriteRenderer>().sprite = rightDownBridgeSprite;
             rightDownBridgeTile.transform.parent = currentMap.transform;
+            tiles.Add(rightDownBridgeTile.GetComponent<Tile>());
+            tiles.Add(currentMapManager.insideGrids[new Vector2(x + 1, y - 1)].GetComponent<Tile>());
 
-            var middleEndBridgeTile = Instantiate(tilePrefab, mapManager.insideGrids[new Vector2(x + 1, y)].transform.position, Quaternion.identity);
+            var middleEndBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x + 1, y)].transform.position, Quaternion.identity);
             middleEndBridgeTile.GetComponent<SpriteRenderer>().sprite = middleEndBridgeSprite;
             middleEndBridgeTile.transform.parent = currentMap.transform;
+            //tiles.Add(middleEndBridgeTile.GetComponent<Tile>());
+            //tiles.Add(currentMapManager.insideGrids[new Vector2(x + 1, y)].GetComponent<Tile>());
 
-            
-            mapManager.borderGrids[new Vector2(x, y - 1)].GetComponent<SpriteRenderer>().sprite = downBridgeSprite;
+
+            currentMapManager.borderGrids[new Vector2(x, y - 1)].GetComponent<SpriteRenderer>().sprite = downBridgeSprite;
         }
         else if (entrySide == Vector2Int.right)
         {
-            y = Random.Range(3, mapManager.height - 3);
-            x = mapManager.width - 1;
-            tile = mapManager.borderGrids[new Vector2(mapManager.width - 1, y)];
+            y = Random.Range(3, currentMapManager.height - 3);
+            x = currentMapManager.width - 1;
+            tile = currentMapManager.borderGrids[new Vector2(currentMapManager.width - 1, y)];
 
             tile.GetComponent<SpriteRenderer>().sprite = middleBridgeSprite;
 
-            mapManager.borderGrids[new Vector2(x, y + 1)].GetComponent<SpriteRenderer>().sprite = topBridgeSprite;
+            currentMapManager.borderGrids[new Vector2(x, y + 1)].GetComponent<SpriteRenderer>().sprite = topBridgeSprite;
 
-            var leftTopBridgeTile = Instantiate(tilePrefab, mapManager.insideGrids[new Vector2(x - 1, y + 1)].transform.position, Quaternion.identity);
+            var leftTopBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x - 1, y + 1)].transform.position, Quaternion.identity);
             leftTopBridgeTile.GetComponent<SpriteRenderer>().sprite = leftTopBridgeSprite;
             leftTopBridgeTile.transform.parent = currentMap.transform;
+            tiles.Add(leftTopBridgeTile.GetComponent<Tile>());
+            tiles.Add(currentMapManager.insideGrids[new Vector2(x - 1, y + 1)].GetComponent<Tile>());
 
-            var leftDownBridgeTile = Instantiate(tilePrefab, mapManager.insideGrids[new Vector2(x - 1, y - 1)].transform.position, Quaternion.identity);
+            var leftDownBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x - 1, y - 1)].transform.position, Quaternion.identity);
             leftDownBridgeTile.GetComponent<SpriteRenderer>().sprite = leftDownBridgeSprite;
             leftDownBridgeTile.transform.parent = currentMap.transform;
+            tiles.Add(leftDownBridgeTile.GetComponent<Tile>());
+            tiles.Add(currentMapManager.insideGrids[new Vector2(x - 1, y - 1)].GetComponent<Tile>());
 
-            var middleEndBridgeTile = Instantiate(tilePrefab, mapManager.insideGrids[new Vector2(x - 1, y)].transform.position, Quaternion.identity);
+            var middleEndBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x - 1, y)].transform.position, Quaternion.identity);
             middleEndBridgeTile.GetComponent<SpriteRenderer>().sprite = middleEndBridgeSprite;
             middleEndBridgeTile.transform.parent = currentMap.transform;
+            //tiles.Add(middleEndBridgeTile.GetComponent<Tile>());
+            //tiles.Add(currentMapManager.insideGrids[new Vector2(x - 1, y)].GetComponent<Tile>());
 
 
-            mapManager.borderGrids[new Vector2(x, y - 1)].GetComponent<SpriteRenderer>().sprite = downBridgeSprite;
+            currentMapManager.borderGrids[new Vector2(x, y - 1)].GetComponent<SpriteRenderer>().sprite = downBridgeSprite;
         }
         else if (entrySide == Vector2Int.up)
         {
-            x = Random.Range(3, mapManager.width - 3);
-            y = mapManager.height - 1;
-            tile = mapManager.borderGrids[new Vector2(x, y)];
+            x = Random.Range(3, currentMapManager.width - 3);
+            y = currentMapManager.height - 1;
+            tile = currentMapManager.borderGrids[new Vector2(x, y)];
             tile.GetComponent<SpriteRenderer>().sprite = topDownMiddleBridgeSprite;
-            mapManager.borderGrids[new Vector2(x+1, y)].GetComponent<SpriteRenderer>().sprite = topdownRightBridgeSprite;
-            mapManager.borderGrids[new Vector2(x-1, y)].GetComponent<SpriteRenderer>().sprite = topdownLeftBridgeSprite;
 
-            var leftDownBridgeTile = Instantiate(tilePrefab, mapManager.insideGrids[new Vector2(x - 1, y - 1)].transform.position, Quaternion.identity);
+            currentMapManager.borderGrids[new Vector2(x+1, y)].GetComponent<SpriteRenderer>().sprite = topdownRightBridgeSprite;
+            currentMapManager.borderGrids[new Vector2(x-1, y)].GetComponent<SpriteRenderer>().sprite = topdownLeftBridgeSprite;
+
+            var leftDownBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x - 1, y - 1)].transform.position, Quaternion.identity);
             leftDownBridgeTile.GetComponent<SpriteRenderer>().sprite = downLeftBridgeSprite;
             leftDownBridgeTile.transform.parent = currentMap.transform;
+            tiles.Add(leftDownBridgeTile.GetComponent<Tile>());
+            tiles.Add(currentMapManager.insideGrids[new Vector2(x - 1, y - 1)].GetComponent<Tile>());
 
-            var rightDownBridgeTile = Instantiate(tilePrefab, mapManager.insideGrids[new Vector2(x + 1, y - 1)].transform.position, Quaternion.identity);
+            var rightDownBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x + 1, y - 1)].transform.position, Quaternion.identity);
             rightDownBridgeTile.GetComponent<SpriteRenderer>().sprite = downRightBridgeSprite;
             rightDownBridgeTile.transform.parent = currentMap.transform;
+            tiles.Add(rightDownBridgeTile.GetComponent<Tile>());
+            tiles.Add(currentMapManager.insideGrids[new Vector2(x + 1, y - 1)].GetComponent<Tile>());
 
-            var middleEndBridgeTile = Instantiate(tilePrefab, mapManager.insideGrids[new Vector2(x, y - 1)].transform.position, Quaternion.identity);
+            var middleEndBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x, y - 1)].transform.position, Quaternion.identity);
             middleEndBridgeTile.GetComponent<SpriteRenderer>().sprite = topMiddleEndBridgeSprite;
             middleEndBridgeTile.transform.parent = currentMap.transform;
+            //tiles.Add(middleEndBridgeTile.GetComponent<Tile>());
+            //tiles.Add(currentMapManager.insideGrids[new Vector2(x, y - 1)].GetComponent<Tile>());
         }
         else if (entrySide == Vector2Int.down)
         {
-            x = Random.Range(3, mapManager.width - 3);
+            x = Random.Range(3, currentMapManager.width - 3);
             y = 0;
-            tile = mapManager.borderGrids[new Vector2(x, y)];
+            tile = currentMapManager.borderGrids[new Vector2(x, y)];
 
             tile.GetComponent<SpriteRenderer>().sprite = topDownMiddleBridgeSprite;
-            mapManager.borderGrids[new Vector2(x + 1, y)].GetComponent<SpriteRenderer>().sprite = topdownRightBridgeSprite;
-            mapManager.borderGrids[new Vector2(x - 1, y)].GetComponent<SpriteRenderer>().sprite = topdownLeftBridgeSprite;
 
-            var leftDownBridgeTile = Instantiate(tilePrefab, mapManager.insideGrids[new Vector2(x - 1, y + 1)].transform.position, Quaternion.identity);
+            currentMapManager.borderGrids[new Vector2(x + 1, y)].GetComponent<SpriteRenderer>().sprite = topdownRightBridgeSprite;
+            currentMapManager.borderGrids[new Vector2(x - 1, y)].GetComponent<SpriteRenderer>().sprite = topdownLeftBridgeSprite;
+
+            var leftDownBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x - 1, y + 1)].transform.position, Quaternion.identity);
             leftDownBridgeTile.GetComponent<SpriteRenderer>().sprite = topLeftBridgeSprite;
             leftDownBridgeTile.transform.parent = currentMap.transform;
+            tiles.Add(leftDownBridgeTile.GetComponent<Tile>());
+            tiles.Add(currentMapManager.insideGrids[new Vector2(x - 1, y + 1)].GetComponent<Tile>());
 
-            var rightDownBridgeTile = Instantiate(tilePrefab, mapManager.insideGrids[new Vector2(x + 1, y + 1)].transform.position, Quaternion.identity);
+            var rightDownBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x + 1, y + 1)].transform.position, Quaternion.identity);
             rightDownBridgeTile.GetComponent<SpriteRenderer>().sprite = topRightBridgeSprite;
             rightDownBridgeTile.transform.parent = currentMap.transform;
+            tiles.Add(rightDownBridgeTile.GetComponent<Tile>());
+            tiles.Add(currentMapManager.insideGrids[new Vector2(x + 1, y + 1)].GetComponent<Tile>());
 
-            var middleEndBridgeTile = Instantiate(tilePrefab, mapManager.insideGrids[new Vector2(x, y + 1)].transform.position, Quaternion.identity);
+            var middleEndBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x, y + 1)].transform.position, Quaternion.identity);
             middleEndBridgeTile.GetComponent<SpriteRenderer>().sprite = downMiddleEndBridgeSprite;
             middleEndBridgeTile.transform.parent = currentMap.transform;
+            //tiles.Add(middleEndBridgeTile.GetComponent<Tile>());
+            //tiles.Add(currentMapManager.insideGrids[new Vector2(x, y + 1)].GetComponent<Tile>());
         }
         
-        tile.GetComponent<BoxCollider2D>().enabled = false;
+
+        foreach (var tile_ in tiles)
+        {
+            tile_.gameObject.name = "BridgeTile";
+            tile_.gameObject.layer = 6;
+            tile_.GetComponent<BoxCollider2D>().isTrigger = false;
+            tile_.usable = false;
+        }
+
         tile.gameObject.name = "EntryTile";
-        mapManager.entryTilePos = new Vector2(x,y);
+        tile.gameObject.layer = 6;
+        tile.GetComponent<BoxCollider2D>().isTrigger = true;
+        tile.GetComponent<Tile>().usable = true;
+        currentMapManager.entryTilePos = new Vector2(x,y);
         if(setExitTile) SetExitTile(entrySide);
     }
 
@@ -227,110 +273,200 @@ public class GridManager : MonoBehaviour
         List<Vector2Int> possibleExitSides = new List<Vector2Int>() { Vector2Int.left, Vector2Int.up, Vector2Int.right, Vector2Int.down };
         possibleExitSides.Remove(entrySide);
         Vector2Int exitSide = possibleExitSides[Random.Range(0, possibleExitSides.Count)];
-        mapManager.exitSide = exitSide;
+        currentMapManager.exitSide = exitSide;
+
         int y = 0, x = 0;
-        Tile tile = new Tile();
+        Tile tile = null;
+
+        List<Tile> tiles = new List<Tile>();
+
         if (exitSide == Vector2Int.left)
         {
-            y = Random.Range(3, mapManager.height - 3);
+            y = Random.Range(3, currentMapManager.height - 3);
             x = 0;
-            tile = mapManager.borderGrids[new Vector2(0, y)];
+            tile = currentMapManager.borderGrids[new Vector2(0, y)];
+
+            if (!CheckAvailabilityForExitTile(Vector2Int.left)) { 
+                SetExitTile(entrySide);
+                return;
+            }
 
             tile.GetComponent<SpriteRenderer>().sprite = middleBridgeSprite;
 
-            mapManager.borderGrids[new Vector2(x, y + 1)].GetComponent<SpriteRenderer>().sprite = topBridgeSprite;
+            currentMapManager.borderGrids[new Vector2(x, y + 1)].GetComponent<SpriteRenderer>().sprite = topBridgeSprite;
 
-            var rightTopBridgeTile = Instantiate(tilePrefab, mapManager.insideGrids[new Vector2(x + 1, y + 1)].transform.position, Quaternion.identity);
+            var rightTopBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x + 1, y + 1)].transform.position, Quaternion.identity);
             rightTopBridgeTile.GetComponent<SpriteRenderer>().sprite = rightTopBridgeSprite;
             rightTopBridgeTile.transform.parent = currentMap.transform;
+            tiles.Add(rightTopBridgeTile.GetComponent<Tile>());
+            tiles.Add(currentMapManager.insideGrids[new Vector2(x + 1, y + 1)].GetComponent<Tile>());
 
-            var rightDownBridgeTile = Instantiate(tilePrefab, mapManager.insideGrids[new Vector2(x + 1, y - 1)].transform.position, Quaternion.identity);
+            var rightDownBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x + 1, y - 1)].transform.position, Quaternion.identity);
             rightDownBridgeTile.GetComponent<SpriteRenderer>().sprite = rightDownBridgeSprite;
             rightDownBridgeTile.transform.parent = currentMap.transform;
+            tiles.Add(rightDownBridgeTile.GetComponent<Tile>());
+            tiles.Add(currentMapManager.insideGrids[new Vector2(x + 1, y - 1)].GetComponent<Tile>());
 
-            var middleEndBridgeTile = Instantiate(tilePrefab, mapManager.insideGrids[new Vector2(x + 1, y)].transform.position, Quaternion.identity);
+            var middleEndBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x + 1, y)].transform.position, Quaternion.identity);
             middleEndBridgeTile.GetComponent<SpriteRenderer>().sprite = middleEndBridgeSprite;
             middleEndBridgeTile.transform.parent = currentMap.transform;
+            //tiles.Add(middleEndBridgeTile.GetComponent<Tile>());
+            //tiles.Add(currentMapManager.insideGrids[new Vector2(x + 1, y)].GetComponent<Tile>());
 
 
-            mapManager.borderGrids[new Vector2(x, y - 1)].GetComponent<SpriteRenderer>().sprite = downBridgeSprite;
+            currentMapManager.borderGrids[new Vector2(x, y - 1)].GetComponent<SpriteRenderer>().sprite = downBridgeSprite;
 
         }
         else if (exitSide == Vector2Int.right)
         {
-            y = Random.Range(3, mapManager.height - 3);
-            x = mapManager.width - 1;
-            tile = mapManager.borderGrids[new Vector2(mapManager.width - 1, y)];
-            tile.gameObject.name = "ExitTile";
-            
-            tile = mapManager.borderGrids[new Vector2(mapManager.width - 1, y)];
+            y = Random.Range(3, currentMapManager.height - 3);
+            x = currentMapManager.width - 1;
+            tile = currentMapManager.borderGrids[new Vector2(currentMapManager.width - 1, y)];
 
             tile.GetComponent<SpriteRenderer>().sprite = middleBridgeSprite;
 
-            mapManager.borderGrids[new Vector2(x, y + 1)].GetComponent<SpriteRenderer>().sprite = topBridgeSprite;
 
-            var leftTopBridgeTile = Instantiate(tilePrefab, mapManager.insideGrids[new Vector2(x - 1, y + 1)].transform.position, Quaternion.identity);
+            currentMapManager.borderGrids[new Vector2(x, y + 1)].GetComponent<SpriteRenderer>().sprite = topBridgeSprite;
+
+            var leftTopBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x - 1, y + 1)].transform.position, Quaternion.identity);
             leftTopBridgeTile.GetComponent<SpriteRenderer>().sprite = leftTopBridgeSprite;
             leftTopBridgeTile.transform.parent = currentMap.transform;
+            tiles.Add(leftTopBridgeTile.GetComponent<Tile>());
+            tiles.Add(currentMapManager.insideGrids[new Vector2(x - 1, y + 1)].GetComponent<Tile>());
 
-            var leftDownBridgeTile = Instantiate(tilePrefab, mapManager.insideGrids[new Vector2(x - 1, y - 1)].transform.position, Quaternion.identity);
+            var leftDownBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x - 1, y - 1)].transform.position, Quaternion.identity);
             leftDownBridgeTile.GetComponent<SpriteRenderer>().sprite = leftDownBridgeSprite;
             leftDownBridgeTile.transform.parent = currentMap.transform;
+            tiles.Add(leftDownBridgeTile.GetComponent<Tile>());
+            tiles.Add(currentMapManager.insideGrids[new Vector2(x - 1, y - 1)].GetComponent<Tile>());
 
-            var middleEndBridgeTile = Instantiate(tilePrefab, mapManager.insideGrids[new Vector2(x - 1, y)].transform.position, Quaternion.identity);
+            var middleEndBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x - 1, y)].transform.position, Quaternion.identity);
             middleEndBridgeTile.GetComponent<SpriteRenderer>().sprite = middleEndBridgeSprite;
             middleEndBridgeTile.transform.parent = currentMap.transform;
+            //tiles.Add(middleEndBridgeTile.GetComponent<Tile>());
+            //tiles.Add(currentMapManager.insideGrids[new Vector2(x - 1, y)].GetComponent<Tile>());
 
 
-            mapManager.borderGrids[new Vector2(x, y - 1)].GetComponent<SpriteRenderer>().sprite = downBridgeSprite;
+            currentMapManager.borderGrids[new Vector2(x, y - 1)].GetComponent<SpriteRenderer>().sprite = downBridgeSprite;
 
         }
         else if (exitSide == Vector2Int.up)
         {
-            x = Random.Range(3, mapManager.width - 3);
-            y = mapManager.height - 1;
-            tile = mapManager.borderGrids[new Vector2(x, mapManager.height - 1)];
+            x = Random.Range(3, currentMapManager.width - 3);
+            y = currentMapManager.height - 1;
+            tile = currentMapManager.borderGrids[new Vector2(x, currentMapManager.height - 1)];
 
             tile.GetComponent<SpriteRenderer>().sprite = topDownMiddleBridgeSprite;
-            mapManager.borderGrids[new Vector2(x + 1, y)].GetComponent<SpriteRenderer>().sprite = topdownRightBridgeSprite;
-            mapManager.borderGrids[new Vector2(x - 1, y)].GetComponent<SpriteRenderer>().sprite = topdownLeftBridgeSprite;
 
-            var leftDownBridgeTile = Instantiate(tilePrefab, mapManager.insideGrids[new Vector2(x - 1, y - 1)].transform.position, Quaternion.identity);
+
+            currentMapManager.borderGrids[new Vector2(x + 1, y)].GetComponent<SpriteRenderer>().sprite = topdownRightBridgeSprite;
+            currentMapManager.borderGrids[new Vector2(x - 1, y)].GetComponent<SpriteRenderer>().sprite = topdownLeftBridgeSprite;
+
+            var leftDownBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x - 1, y - 1)].transform.position, Quaternion.identity);
             leftDownBridgeTile.GetComponent<SpriteRenderer>().sprite = downLeftBridgeSprite;
             leftDownBridgeTile.transform.parent = currentMap.transform;
+            tiles.Add(leftDownBridgeTile.GetComponent<Tile>());
+            tiles.Add(currentMapManager.insideGrids[new Vector2(x - 1, y - 1)].GetComponent<Tile>());
 
-            var rightDownBridgeTile = Instantiate(tilePrefab, mapManager.insideGrids[new Vector2(x + 1, y - 1)].transform.position, Quaternion.identity);
+            var rightDownBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x + 1, y - 1)].transform.position, Quaternion.identity);
             rightDownBridgeTile.GetComponent<SpriteRenderer>().sprite = downRightBridgeSprite;
             rightDownBridgeTile.transform.parent = currentMap.transform;
+            tiles.Add(rightDownBridgeTile.GetComponent<Tile>());
+            tiles.Add(currentMapManager.insideGrids[new Vector2(x + 1, y - 1)].GetComponent<Tile>());
 
-            var middleEndBridgeTile = Instantiate(tilePrefab, mapManager.insideGrids[new Vector2(x, y - 1)].transform.position, Quaternion.identity);
+            var middleEndBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x, y - 1)].transform.position, Quaternion.identity);
             middleEndBridgeTile.GetComponent<SpriteRenderer>().sprite = topMiddleEndBridgeSprite;
             middleEndBridgeTile.transform.parent = currentMap.transform;
+            //tiles.Add(middleEndBridgeTile.GetComponent<Tile>());
+            //tiles.Add(currentMapManager.insideGrids[new Vector2(x, y - 1)].GetComponent<Tile>());
+
             tile.gameObject.name = "ExitTile";
         }
         else if (exitSide == Vector2Int.down)
         {
-            x = Random.Range(3, mapManager.width - 3);
+            x = Random.Range(3, currentMapManager.width - 3);
             y = 0;
-            tile = mapManager.borderGrids[new Vector2(x, 0)];
+            tile = currentMapManager.borderGrids[new Vector2(x, 0)];
 
             tile.GetComponent<SpriteRenderer>().sprite = topDownMiddleBridgeSprite;
-            mapManager.borderGrids[new Vector2(x + 1, y)].GetComponent<SpriteRenderer>().sprite = topdownRightBridgeSprite;
-            mapManager.borderGrids[new Vector2(x - 1, y)].GetComponent<SpriteRenderer>().sprite = topdownLeftBridgeSprite;
 
-            var leftDownBridgeTile = Instantiate(tilePrefab, mapManager.insideGrids[new Vector2(x - 1, y + 1)].transform.position, Quaternion.identity);
+            currentMapManager.borderGrids[new Vector2(x + 1, y)].GetComponent<SpriteRenderer>().sprite = topdownRightBridgeSprite;
+            currentMapManager.borderGrids[new Vector2(x - 1, y)].GetComponent<SpriteRenderer>().sprite = topdownLeftBridgeSprite;
+
+            var leftDownBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x - 1, y + 1)].transform.position, Quaternion.identity);
             leftDownBridgeTile.GetComponent<SpriteRenderer>().sprite = topLeftBridgeSprite;
             leftDownBridgeTile.transform.parent = currentMap.transform;
+            tiles.Add(leftDownBridgeTile.GetComponent<Tile>());
+            tiles.Add(currentMapManager.insideGrids[new Vector2(x - 1, y + 1)].GetComponent<Tile>());
 
-            var rightDownBridgeTile = Instantiate(tilePrefab, mapManager.insideGrids[new Vector2(x + 1, y + 1)].transform.position, Quaternion.identity);
+            var rightDownBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x + 1, y + 1)].transform.position, Quaternion.identity);
             rightDownBridgeTile.GetComponent<SpriteRenderer>().sprite = topRightBridgeSprite;
             rightDownBridgeTile.transform.parent = currentMap.transform;
+            tiles.Add(rightDownBridgeTile.GetComponent<Tile>());
+            tiles.Add(currentMapManager.insideGrids[new Vector2(x + 1, y + 1)].GetComponent<Tile>());
 
-            var middleEndBridgeTile = Instantiate(tilePrefab, mapManager.insideGrids[new Vector2(x, y + 1)].transform.position, Quaternion.identity);
+            var middleEndBridgeTile = Instantiate(tilePrefab, currentMapManager.insideGrids[new Vector2(x, y + 1)].transform.position, Quaternion.identity);
             middleEndBridgeTile.GetComponent<SpriteRenderer>().sprite = downMiddleEndBridgeSprite;
             middleEndBridgeTile.transform.parent = currentMap.transform;
+            //tiles.Add(middleEndBridgeTile.GetComponent<Tile>());
+            //tiles.Add(currentMapManager.insideGrids[new Vector2(x, y + 1)].GetComponent<Tile>());
         }
+
+
+        foreach (var tile_ in tiles)
+        {
+            tile_.usable = false;
+            tile_.gameObject.name = "BridgeTile";
+            tile_.gameObject.layer = 6;
+            tile_.GetComponent<BoxCollider2D>().isTrigger = false;
+        }
+
         tile.gameObject.name = "ExitTile";
-        mapManager.exitTilePos = new Vector2(x, y);
+        tile.GetComponent<Tile>().usable = true;
+        tile.GetComponent<Tile>().gameObject.layer = 7;
+        tile.GetComponent<BoxCollider2D>().isTrigger = true;
+        currentMapManager.exitTilePos = new Vector2(x, y);
+        //check fonksiyonuna iflerin icinde x y gondererek bakilacak
+    }
+
+    private bool CheckAvailabilityForExitTile(Vector2Int side)
+    {
+        if(side == Vector2Int.left)
+        {
+            RaycastHit2D hit = Physics2D.Raycast(currentMapManager.borderGrids[new Vector2(0, currentMapManager.exitTilePos.y)].transform.position + new Vector3(-0.5f, 0), Vector2.left, currentMapManager.width);
+            if (hit.collider != null)
+            {
+                Debug.Log("Hit " + hit.collider.name);
+                return false;
+            }
+        }
+        else if(side == Vector2Int.right)
+        {
+            RaycastHit2D hit = Physics2D.Raycast(currentMapManager.borderGrids[new Vector2(currentMapManager.exitTilePos.x, currentMapManager.exitTilePos.y)].transform.position + new Vector3(0.5f, 0), Vector2.right, currentMapManager.width);
+            if (hit.collider != null)
+            {
+                Debug.Log("Hit " + hit.collider.name);
+                return false;
+            }
+        }
+        else if(side == Vector2Int.up)
+        {
+            RaycastHit2D hit = Physics2D.Raycast(currentMapManager.borderGrids[new Vector2(currentMapManager.exitTilePos.x, currentMapManager.exitTilePos.y)].transform.position + new Vector3(0, 0.5f), Vector2.up, currentMapManager.height);
+            if (hit.collider != null)
+            {
+                Debug.Log("Hit " + hit.collider.name);
+                return false;
+            }
+        }
+        else if (side == Vector2Int.down)
+        {
+            RaycastHit2D hit = Physics2D.Raycast(currentMapManager.borderGrids[new Vector2(currentMapManager.exitTilePos.x, 0)].transform.position + new Vector3(0, -0.5f), Vector2.down, currentMapManager.height);
+            if (hit.collider != null)
+            {
+                Debug.Log("Hit " + hit.collider.name);
+                return false;
+            }
+        }
+        return true;
     }
 }

@@ -4,15 +4,33 @@ using UnityEngine;
 
 public class Tile : MonoBehaviour
 {
-    // Start is called before the first frame update
-    void Start()
+    public bool usable = true;
+    [SerializeField] GameObject highlight;
+
+    private void OnMouseOver()
     {
-        
+        if (!usable) return;
+        highlight.SetActive(true);
     }
 
-    // Update is called once per frame
-    void Update()
+    private void OnMouseExit()
     {
-        
+        if (!usable) return;
+        highlight.SetActive(false);
+    }
+
+    private void OnMouseDown()
+    {
+        if (!usable) return;
+        PlayerController.instance.SetTargetMoveTile(this);
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (!usable) return;
+        if (other.CompareTag("Player"))
+        {
+            PlayerController.instance.SetCurrentTile(this);
+        }
     }
 }
