@@ -29,7 +29,7 @@ public class PlayerController : MonoBehaviour
 
     private void Update()
     {
-        Move();
+        FreeMove();
     }
 
     private void OnTriggerEnter2D(Collider2D collision)
@@ -38,26 +38,36 @@ public class PlayerController : MonoBehaviour
         {
             _rb.velocity = Vector2.zero;
             TurnManager.instance._isFree = false;
+            _canWalk = false;
             _isWalking = false;
             _currentTile = collision.GetComponent<Tile>();
             SetTargetMoveTile(collision.GetComponent<Tile>());
         }
     }
 
-    private void Move()
+    private void FreeMove()
     {
-
-        if (!_isWalking) return;
-        _seeker.StartPath(_rb.position, _targetMoveTile.transform.position, OnPathComplete);
-        if (_path == null) return;
-        if (_path.vectorPath.Count == 0) return;
-        Vector2 direction = ((Vector2)_path.vectorPath[0] - _rb.position).normalized;
-        Vector2 force = direction * _moveSpeed * Time.deltaTime;
-        _rb.AddForce(force);
-        float distance = Vector2.Distance(_rb.position, _path.vectorPath[0]);
-        if (distance < 1f)
+        if (TurnManager.instance._isFree)
         {
-            _path.vectorPath.RemoveAt(0);
+            GetComponent<AIPath>().canMove = true;
+            if (!_isWalking) return;
+            _seeker.StartPath(_rb.position, _targetMoveTile.transform.position, OnPathComplete);
+            if (_path == null) return;
+            if (_path.vectorPath.Count == 0) return;
+            Vector2 direction = ((Vector2)_path.vectorPath[0] - _rb.position).normalized;
+            Vector2 force = direction * _moveSpeed * Time.deltaTime;
+            _rb.AddForce(force);
+            float distance = Vector2.Distance(_rb.position, _path.vectorPath[0]);
+            if (distance < 1f)
+            {
+                _path.vectorPath.RemoveAt(0);
+            }
+        }
+        else
+        {
+            transform.position = _currentTile.transform.position;
+            GetComponent<AIPath>().canMove = false;
+            _isWalking = false;
         }
     }
 

@@ -28,11 +28,13 @@ public class Tile : MonoBehaviour
             if (PlayerController.instance._isWalking) return;
             //if (!TurnManager.instance._isPlayerTurn) return;
         }
-        
-        if (TurnManager.instance._isFree || (GameManager.instance._isShowingWalkableTiles && PlayerController.instance.GetCurrentTile().Neighbours().Contains(this)))
+        if (TurnManager.instance._isFree)
         {
-            Debug.Log("Tile clicked");
             PlayerController.instance.SetTargetMoveTile(this);
+        }
+        else if ((GameManager.instance._isShowingWalkableTiles && PlayerController.instance.GetCurrentTile().Neighbours().Contains(this)))
+        {
+            PlayerMove.instance.MoveToTargetTile(this);
         }
 
         GameManager.instance.HideWalkableTiles();
